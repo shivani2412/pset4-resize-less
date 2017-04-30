@@ -15,11 +15,11 @@ int main(int argc, char *argv[])
         fprintf(stderr, "Usage: ./resize n  infile outfile\n");
         return 1;
     }
-    int k=atoi(argv[1]);
-    if(k<1||k>100)
+    int n=atoi(argv[1]);
+    if(n<=1||n>100)
     {
-        fprintf(stderr,"enter n less than 100\n");
-        return 1;
+    
+        return 0;
     }
     // remember filenames
     char *infile = argv[2];
@@ -53,18 +53,20 @@ int main(int argc, char *argv[])
     BITMAPINFOHEADER bi_1;
     fread(&bi, sizeof(BITMAPINFOHEADER), 1, inptr);
     
-    // determine padding for scanlines
-    int padding = (4 - ((bi.biWidth)* sizeof(RGBTRIPLE)) % 4) % 4;
+    
+   
 
 
-     bi_1.biwidth=bi.biwidth*n;
-     bi_1.biheight=bi.biheight*n;
+     bi_1.biWidth=bi.biWidth*n;
+     bi_1.biHeight=bi.biHeight*n;
      
+     int padding= (4 - ((bi.biWidth) * sizeof(RGBTRIPLE)) % 4) % 4;
+
      // determine padding for scanlines
     int padding_1 = (4 - ((bi_1.biWidth) * sizeof(RGBTRIPLE)) % 4) % 4;
 
-     bi_1.biSizeImage=((sizeof(RGBTRIPLE)*bi_1.biwidth)+padding_1)*abs(bi_1.biHeight);
-     bf_1.bfsize=bi_1.biSizeImage + sizeof(BITMAPFILEHEADER) +  sizeof(BITMAPINFOHEADER);
+     bi_1.biSizeImage=((sizeof(RGBTRIPLE)*bi_1.biWidth)+padding_1)*abs(bi_1.biHeight);
+     bf_1.bfSize=bi_1.biSizeImage  + 54;
     // ensure infile is (likely) a 24-bit uncompressed BMP 4.0
     if (bf.bfType != 0x4d42 || bf.bfOffBits != 54 || bi.biSize != 40 || 
         bi.biBitCount != 24 || bi.biCompression != 0)
@@ -83,51 +85,80 @@ int main(int argc, char *argv[])
 
     
     // iterate over infile's scanlines
-    for (int i = 0, biHeight = abs(bi_1.biHeight); i < biHeight; i++)
+    for (int i = 0, biHeight = abs(bi.biHeight); i < biHeight; i++)
     {
         // iterate over pixels in scanline
-        for (int j = 0; j < bi_1.biWidth; j++)
+        for (int j = 0; j < bi.biWidth; j++)
         {
             // temporary storage
             RGBTRIPLE triple;
-
+           
             // read RGB triple from infile
             fread(&triple, sizeof(RGBTRIPLE), 1, inptr);
-
             
-        }
-     for (int i = 0, biHeight = abs(bi_1.biHeight); i < biHeight; i++)
-    {
-        // iterate over pixels in scanline
-        for (int j = 0; j < bi_1.biWidth; j++)
-        {
-            // temporary storage
-            RGBTRIPLE triple;
-
-            for(int i=0;i<n;i++)
-            {
+        
+        
+        for(int q=0;q<n;q++)
+            {    
+                 
                  fwrite(&triple, sizeof(RGBTRIPLE), 1, outptr);
             }
                     
-                    
-            for (int k = 0; k < padding_1; k++)
+        }        
+            for (int p = 0; p < padding_1; p++)
+            {
+               fputc(0x00, outptr);
+            }
+           fseek(inptr, padding, SEEK_CUR); 
+        
+    }
+            
+            
+    
+    
+     for(int i = 0, biHeight = abs(bi.biHeight); i < biHeight; i++)
+    {
+        
+          // temporary storage
+            RGBTRIPLE triple;
+            RGBTRIPLE array[bi_1.biWidth];
+            
+         for (int j = 0; j < bi.biWidth; j++)
+        {
+            // read RGB triple from infile
+            fread(&triple, sizeof(RGBTRIPLE), 1, inptr);
+            
+            
+            
+            for(int r=0;r<n;r++)
+            {
+              array[j*n+r]= triple;
+            }
+            
+            for(int m=0;m<n;m++)
+            {
+                 triple=array[m];
+                 fwrite(&triple, sizeof(RGBTRIPLE), 1, outptr);
+            
+            }
+        }
+            for (int l= 0; l < padding_1; l++)
             {
                fputc(0x00, outptr);
             }
             
+            
+            
             fseek(inptr, padding, SEEK_CUR);
-        }    
-        
+          
+    }
 
         // skip over padding, if any
         
 
         // then add it back (to demonstrate how)
-        for (int k = 0; k < padding; k++)
-        {
-            fputc(0x00, outptr);
-        }
-    }
+       
+    
 
     // close infile
     fclose(inptr);
