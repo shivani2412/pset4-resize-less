@@ -17,10 +17,10 @@ int main(int argc, char *argv[])
         return 1;
     }
     int n=atoi(argv[1]);
-    if((n<1)||(n>100))
+    if ((n < 1) || (n > 100))
     {
     
-        return 5;
+        return 1;
     }
     // remember filenames
     char *infile = argv[2];
@@ -64,11 +64,11 @@ int main(int argc, char *argv[])
         return 4;
     }
     
-   BITMAPFILEHEADER bf_1=bf;
-   BITMAPINFOHEADER bi_1=bi; 
+    BITMAPFILEHEADER bf_1 = bf;
+    BITMAPINFOHEADER bi_1 = bi; 
     
-    bi_1.biWidth*=n;
-    bi_1.biHeight*=n;
+    bi_1.biWidth *= n;
+    bi_1.biHeight *= n;
     
     int  padding= (4 - ((bi.biWidth) * sizeof(RGBTRIPLE)) % 4) % 4;
 
@@ -87,39 +87,43 @@ int main(int argc, char *argv[])
     // write outfile's BITMAPINFOHEADER
     fwrite(&bi_1, sizeof(BITMAPINFOHEADER), 1, outptr);
      
-     int ini_pointer=bi.biWidth*sizeof(RGBTRIPLE) +padding;
+    int ini_pointer = bi.biWidth * sizeof(RGBTRIPLE) + padding;
 
     for (int i = 0, biHeight = abs(bi.biHeight); i < biHeight; i++)
     // iterate over infile's scanlines
     {
-        for(int j=0;j<n;j++)// for vertical copy
+        for(int j=0;j < n;j++)
+        // for vertical copy
         {
          // iterate over pixels in scanline
-        for (int k = 0; k < bi.biWidth; k++)
-        {
+            for (int k = 0; k < bi.biWidth; k++)
+            {  
             // temporary storage
-            RGBTRIPLE triple;
+                RGBTRIPLE triple;
 
             // read RGB triple from infile
-            fread(&triple, sizeof(RGBTRIPLE), 1, inptr);
+                fread(&triple, sizeof(RGBTRIPLE), 1, inptr);
 
             // write RGB triple to outfile
-            for(int l=0;l<n;l++)
-            {// for horizontal  copy
-            fwrite(&triple, sizeof(RGBTRIPLE), 1, outptr);
+                for(int l_1=0;l_1 < n;l_1++)
+                {
+                // for horizontal  copy
+                    fwrite(&triple, sizeof(RGBTRIPLE), 1, outptr);
+                }
             }
-        }
-        fseek(inptr,padding,SEEK_CUR);
-        for(int m=0;m<padding_1;m++)
+            fseek(inptr,padding,SEEK_CUR);
+            for(int m_1=0;m_1 < padding_1;m_1++)
         // adding padding to outifile
-        {
-            fputc(0x00, outptr);
+            {
+                fputc(0x00, outptr);
+
+            }
+            fseek(inptr, -ini_pointer, SEEK_CUR); 
+        // to point to the starting point and skipping padding
 
         }
-        fseek(inptr,-ini_pointer, SEEK_CUR); //to point to the starting point and skipping padding
-
-        }
-        fseek(inptr,ini_pointer, SEEK_CUR); //to point to the starting point and skipping padding
+        fseek(inptr,ini_pointer, SEEK_CUR); 
+        // to point to the starting point and skipping padding
 
     }
      
