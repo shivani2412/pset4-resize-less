@@ -88,6 +88,7 @@ int main(int argc, char *argv[])
     fwrite(&bi_1, sizeof(BITMAPINFOHEADER), 1, outptr);
      
     int ini_pointer = bi.biWidth * sizeof(RGBTRIPLE) + padding;
+    // ini_pointer indicates an offset
 
     for (int i = 0, biHeight = abs(bi.biHeight); i < biHeight; i++)
     // iterate over infile's scanlines
@@ -123,7 +124,7 @@ int main(int argc, char *argv[])
 
         }
         fseek(inptr,ini_pointer, SEEK_CUR); 
-        // to point to the starting point and skipping padding
+        // to point to the starting point and skipping padding of other line
 
     }
      
